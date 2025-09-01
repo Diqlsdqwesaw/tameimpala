@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tame Impala - Windows Aero</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #1a1a1a;
+        background-image: radial-gradient(
+            circle at 20% 50%,
+            rgba(146, 117, 164, 0.4) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(229, 50, 71, 0.3) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 40% 20%,
+            rgba(50, 39, 54, 0.5) 0%,
+            transparent 50%
+          );
+        min-height: 100vh;
+        padding: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .window {
+        width: 800px;
+        background: rgba(0, 0, 0, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        /* border-radius: 6px; */
+        overflow: hidden;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.9), 0 10px 40px rgba(0, 0, 0, 0.8),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+      }
+
+      .title-bar {
+        height: 30px;
+        background: rgba(0, 0, 0, 0.5);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        position: relative;
+      }
+
+      .title-bar::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 100%
+        );
+        pointer-events: none;
+      }
+
+      .window-icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        background: linear-gradient(135deg, #9275a4 0%, #e53247 100%);
+        /* border-radius: 2px; */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: white;
+      }
+
+      .window-title {
+        flex: 1;
+        color: #fff;
+        font-size: 12px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        font-weight: 400;
+      }
+
+      .window-controls {
+        display: flex;
+        height: 100%;
+        margin-right: -8px;
+      }
+
+      .window-btn {
+        width: 45px;
+        height: 100%;
+        border: none;
+        background: transparent;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: 10px;
+        transition: background 0.2s;
+      }
+
+      .window-btn:hover::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .window-btn.close:hover::before {
+        background: rgba(232, 17, 35, 0.9);
+      }
+
+      .window-btn i {
+        font-size: 10px;
+        opacity: 0.8;
+      }
+
+      .menu-bar {
+        background: rgba(245, 245, 245, 0.95);
+        backdrop-filter: blur(10px);
+        display: flex;
+        padding: 0 10px;
+        font-size: 12px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+      }
+
+      .menu-item {
+        padding: 4px 10px;
+        color: #000;
+        cursor: pointer;
+        position: relative;
+        transition: background 0.2s;
+      }
+
+      .menu-item:hover {
+        background: rgba(146, 117, 164, 0.15);
+      }
+
+      .content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 30px;
+        min-height: 400px;
+      }
+
+      .songs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+      }
+
+      .song-card {
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        /* border-radius: 4px; */
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      }
+
+      .song-card:hover {
+        transform: translateY(-3px);
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 8px 20px rgba(146, 117, 164, 0.25),
+          inset 0 1px 0 rgba(255, 255, 255, 1);
+        border-color: rgba(146, 117, 164, 0.3);
+      }
+
+      .song-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 15px;
+        background: linear-gradient(
+          135deg,
+          #322736 0%,
+          #9275a4 50%,
+          #e53247 100%
+        );
+        /* border-radius: 8px; */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+
+      .song-icon i {
+        font-size: 28px;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .song-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 5px;
+      }
+
+      .song-artist {
+        font-size: 12px;
+        color: #666;
+        font-weight: 400;
+      }
+
+      .glass-shine {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.15) 0%,
+          rgba(255, 255, 255, 0.05) 50%,
+          transparent 100%
+        );
+        pointer-events: none;
+        /* border-radius: 6px 6px 0 0; */
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding: 20px;
+        }
+
+        .window {
+          width: 100%;
+        }
+
+        .songs-grid {
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="window">
+      <div class="glass-shine"></div>
+
+      <div class="title-bar">
+        <div class="window-icon">
+          <i class="fas fa-music"></i>
+        </div>
+        <div class="window-title">player.exe</div>
+        <div class="window-controls">
+          <button class="window-btn minimize">
+            <i class="fas fa-minus"></i>
+          </button>
+          <button class="window-btn maximize">
+            <i class="far fa-square"></i>
+          </button>
+          <button class="window-btn close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="menu-bar">
+        <div class="menu-item">File</div>
+        <div class="menu-item">View</div>
+        <div class="menu-item">Play</div>
+        <div class="menu-item">Tools</div>
+        <div class="menu-item">Help</div>
+      </div>
+
+      <div class="content">
+        <div class="songs-grid">
+          <a href="pages/letithappen.html" target="_blank" class="song-card">
+            <div class="song-icon">
+              <img src="./assets/letithappen.jpeg" style="width: 72px" alt="" />
+            </div>
+            <div class="song-name">Let It Happen</div>
+            <div class="song-artist">Tame Impala</div>
+          </a>
+
+          <a
+            href="./pages/thelessiknowthebetter.html"
+            target="_blank"
+            class="song-card"
+          >
+            <div class="song-icon">
+              <img
+                src="./assets/letithappen.jpeg"
+                style="width: 72px"
+                alt=""
+                srcset=""
+              />
+            </div>
+            <div class="song-name">The Less I know The Better</div>
+            <div class="song-artist">Tame Impala</div>
+          </a>
+
+          <a href="pages/borderline.html" target="_blank" class="song-card">
+            <div class="song-icon">
+              <img src="assets/borderline.png" style="width: 72px" alt="" />
+            </div>
+            <div class="song-name">Borderline</div>
+            <div class="song-artist">Tame Impala</div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const windowEl = document.querySelector(".window");
+      const titleBar = document.querySelector(".title-bar");
+      const minimizeBtn = document.querySelector(".window-btn.minimize");
+      const maximizeBtn = document.querySelector(".window-btn.maximize");
+      const closeBtn = document.querySelector(".window-btn.close");
+      const contentEl = document.querySelector(".content");
+      const menuBar = document.querySelector(".menu-bar");
+
+      let isDragging = false;
+      let offsetX, offsetY;
+      let isMaximized = false;
+      let isMinimized = false;
+      let prevState = {};
+
+      titleBar.addEventListener("mousedown", (e) => {
+        if (isMaximized) return;
+        isDragging = true;
+        offsetX = e.clientX - windowEl.offsetLeft;
+        offsetY = e.clientY - windowEl.offsetTop;
+        windowEl.style.position = "absolute";
+        windowEl.style.margin = 0;
+        windowEl.style.zIndex = 999;
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (isDragging) {
+          windowEl.style.left = e.clientX - offsetX + "px";
+          windowEl.style.top = e.clientY - offsetY + "px";
+        }
+      });
+
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+      });
+
+      minimizeBtn.addEventListener("click", () => {
+        if (!isMinimized) {
+          contentEl.style.display = "none";
+          menuBar.style.display = "none";
+          windowEl.style.height = "30px";
+          isMinimized = true;
+        } else {
+          contentEl.style.display = "block";
+          menuBar.style.display = "flex";
+          windowEl.style.height = "auto";
+          isMinimized = false;
+        }
+      });
+
+      maximizeBtn.addEventListener("click", () => {
+        if (!isMaximized) {
+          prevState = {
+            left: windowEl.style.left,
+            top: windowEl.style.top,
+            width: windowEl.style.width,
+            height: windowEl.style.height,
+            position: windowEl.style.position,
+          };
+          windowEl.style.position = "fixed";
+          windowEl.style.top = 0;
+          windowEl.style.left = 0;
+          windowEl.style.width = "100%";
+          windowEl.style.height = "100%";
+          isMaximized = true;
+        } else {
+          windowEl.style.position = prevState.position || "absolute";
+          windowEl.style.left = prevState.left || "50px";
+          windowEl.style.top = prevState.top || "50px";
+          windowEl.style.width = prevState.width || "800px";
+          windowEl.style.height = prevState.height || "auto";
+          isMaximized = false;
+        }
+      });
+
+      closeBtn.addEventListener("click", () => {
+        windowEl.remove();
+      });
+    </script>
+  </body>
+</html>

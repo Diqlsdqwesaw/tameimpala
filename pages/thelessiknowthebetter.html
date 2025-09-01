@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>The Less I Know the Better</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <link rel="icon" type="image/jpeg" href="../assets/letithappen.jpeg" />
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: sans-serif;
+      }
+
+      #startOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 3;
+        color: #fff;
+        font-size: 2em;
+        cursor: pointer;
+        transition: opacity 1.5s ease;
+        opacity: 1;
+      }
+
+      #startOverlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #bgVideo {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        z-index: 1;
+      }
+
+      #profile {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #fff;
+        text-align: center;
+        z-index: 2;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      }
+
+      #profile h1 {
+        font-size: 3em;
+        margin: 0;
+        color: #fff;
+      }
+
+      #profile p {
+        font-size: 1.2em;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 5px 0 20px 0;
+      }
+
+      .icons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+        font-size: 1.5em;
+      }
+
+      .icons a,
+      .icons span {
+        color: #fff;
+      }
+      .youtube:hover {
+        color: #ff0000;
+      }
+      .spotify:hover {
+        color: #1db954;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="startOverlay">Click to Continue</div>
+
+    <video
+      id="bgVideo"
+      src="../assets/lessiknowthebetter.mp4"
+      loop
+      playsinline
+    ></video>
+
+    <div id="profile">
+      <h1>The Less I know the Better</h1>
+      <p>Tame Impala</p>
+
+      <div class="icons" style="margin-top: 15px">
+        <a
+          href="https://open.spotify.com/artist/5INjqkS1o8h1imAzPqGZBb"
+          target="_blank"
+        >
+          <i class="spotify fab fa-spotify"></i>
+        </a>
+        <a href="https://www.youtube.com/watch?v=3KjgbtUTLkw" target="_blank">
+          <i class="youtube fab fa-youtube"></i>
+        </a>
+      </div>
+    </div>
+
+    <script>
+      const overlay = document.getElementById("startOverlay");
+      const video = document.getElementById("bgVideo");
+
+      overlay.addEventListener("click", () => {
+        overlay.classList.add("hidden");
+        video.play();
+      });
+    </script>
+  </body>
+</html>
