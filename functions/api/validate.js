@@ -10,6 +10,7 @@ export async function onRequestPost({ request }) {
       return Response.json({ valid: false });
     }
     const invites = await response.json();
+    const response = await fetch(new URL('/public/invites.json', request.url));
     const valid = invites.includes(code);
     return Response.json({ valid });
   } catch (error) {
