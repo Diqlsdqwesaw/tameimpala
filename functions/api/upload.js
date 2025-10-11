@@ -12,6 +12,7 @@ export async function onRequestPost({ request, env }) {
     const formData = await request.formData();
     const invite = formData.get('invite')?.toUpperCase().trim();
     const file = formData.get('image');
+    const response = await fetch(new URL('/public/invites.json', request.url));
 
     if (!invite || !file) {
       return new Response('Invite and image required!', { status: 400 });
