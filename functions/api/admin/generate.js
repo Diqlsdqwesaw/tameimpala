@@ -11,7 +11,7 @@ export async function onRequestPost({ request, env }) {
   try {
     const { count } = await request.json();
     if (!count || count < 1 || count > 50) {
-      return new Response('Invalid count (1-50)!', { status: 400 });
+      return Response.json({ error: 'Invalid count (1-50)!', invites: [] }, { status: 400 });
     }
     const invites = [];
     for (let i = 0; i < count; i++) {
@@ -19,8 +19,8 @@ export async function onRequestPost({ request, env }) {
       await env.INVITES.put(code, 'valid');
       invites.push(code);
     }
-    return Response.json({ invites });
+    return Response.json({ invites, error: null });
   } catch (error) {
-    return new Response('Generation failed!', { status: 500 });
+    return Response.json({ error: 'Generation failed: ' + error.message, invites: [] }, { status: 500 });
   }
 }
