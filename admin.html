@@ -13,8 +13,8 @@
         h1 { color: white; font-size: 2rem; font-weight: 700; margin-bottom: 1rem; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
         #passwordPrompt { display: block; }
         #adminContent { display: none; }
-        input[type="password"], input[type="number"], button { padding: 0.75rem; border: none; border-radius: 25px; font-family: inherit; margin: 0.5rem; }
-        input[type="password"], input[type="number"] { background: rgba(255, 255, 255, 0.2); color: white; text-align: center; width: 200px; }
+        input[type="password"], input[type="number"], input[type="url"], button { padding: 0.75rem; border: none; border-radius: 25px; font-family: inherit; margin: 0.5rem; }
+        input[type="password"], input[type="number"], input[type="url"] { background: rgba(255, 255, 255, 0.2); color: white; text-align: center; width: 200px; }
         input::placeholder { color: rgba(255, 255, 255, 0.6); }
         button { background: rgba(255, 255, 255, 0.2); color: white; cursor: pointer; transition: background 0.3s; }
         button:hover { background: rgba(255, 255, 255, 0.3); }
@@ -24,6 +24,7 @@
         .status.error { background: rgba(255, 0, 0, 0.2); color: #f00; }
         #inviteList { text-align: left; margin-top: 1rem; color: white; max-height: 300px; overflow-y: auto; }
         .invite { background: rgba(255, 255, 255, 0.1); padding: 0.5rem; margin: 0.25rem 0; border-radius: 10px; word-break: break-all; }
+        #newCodes { background: rgba(0, 255, 0, 0.1); padding: 1rem; border-radius: 10px; margin: 1rem 0; }
     </style>
 </head>
 <body>
@@ -37,20 +38,23 @@
         <div id="adminContent">
             <h2>Generate Invites</h2>
             <input type="number" id="numInvites" placeholder="Number to Generate (1-50)" min="1" max="50" value="1">
-            <button onclick="generateInvites()">Generate & Add</button>
+            <button onclick="generateInvites()">Generate Codes</button>
             <div id="genStatus" class="status" style="display: none;"></div>
-            <h2>Current Invites</h2>
+            <div id="newCodes" style="display: none;"></div>
+            <h2>Fetch from Discord (Optional)</h2>
+            <input type="url" id="discordUrl" placeholder="Paste raw JSON message URL from Discord">
+            <button onclick="fetchFromDiscord()">Fetch & Load</button>
+            <h2>Current Invites (from JSON)</h2>
             <div id="inviteList">Loading...</div>
-            <button onclick="loadInvites()">Refresh List</button>
-            <button onclick="testKV()">Test KV Binding</button>
+            <button onclick="loadInvites()">Refresh from JSON</button>
         </div>
     </div>
 
     <script>
-        const SECRET_PASSWORD = 'comlordUltraSecret2025';  // CHANGE THIS TO YOUR SUPER-SECRET PASSWORD!
-        const apiBase = '/api/admin';
+        const SECRET_PASSWORD = 'comlordUltraSecret2025';  // CHANGE THIS!
+        const jsonUrl = '/invites.json';
 
-        // Auto-load if already unlocked (e.g., bookmark)
+        // Auto-load if unlocked
         if (localStorage.getItem('adminUnlocked')) {
             document.getElementById('passwordPrompt').style.display = 'none';
             document.getElementById('adminContent').style.display = 'block';
@@ -63,8 +67,8 @@
             if (pw === SECRET_PASSWORD) {
                 document.getElementById('passwordPrompt').style.display = 'none';
                 document.getElementById('adminContent').style.display = 'block';
-                localStorage.setItem('adminUnlocked', 'true');  // Persist session
-                loadInvites();  // Auto-populate invites
+                localStorage.setItem('adminUnlocked', 'true');
+                loadInvites();
                 status.textContent = 'Access granted! Loading invites...';
                 status.className = 'status success';
                 status.style.display = 'block';
@@ -75,65 +79,73 @@
             }
         }
 
-        async function generateInvites() {
+        function generateInvite() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        function generateInvites() {
             const num = parseInt(document.getElementById('numInvites').value);
             if (num < 1 || num > 50) {
                 alert('1-50 only!');
                 return;
             }
-            const btn = document.querySelector('button[onclick="generateInvites()"]');
-            btn.disabled = true;
-            btn.textContent = 'Generating...';
+            const codes = [];
+            for (let i = 0; i < num; i++) {
+                codes.push(generateInvite());
+            }
+            const newCodesDiv = document.getElementById('newCodes');
+            newCodesDiv.innerHTML = `<strong>New Codes (Copy to invites.json):</strong><br>${codes.join('<br>')}`;
+            newCodesDiv.style.display = 'block';
             const status = document.getElementById('genStatus');
+            status.textContent = `Generated ${num} codes—add to JSON & push to GitHub!`;
+            status.className = 'status success';
+            status.style.display = 'block';
+        }
+
+        async function fetchFromDiscord() {
+            const url = document.getElementById('discordUrl').value.trim();
+            if (!url) {
+                alert('Paste Discord URL!');
+                return;
+            }
+            const status = document.getElementById('genStatus');
+            status.textContent = 'Fetching...';
+            status.className = 'status success';
+            status.style.display = 'block';
             try {
-                const response = await fetch(`${apiBase}/generate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ count: num })
-                });
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Bad URL');
                 const data = await response.json();
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                status.innerHTML = `Added ${num} invites: <br>${data.invites.join('<br>')}`;
-                status.className = 'status success';
-                status.style.display = 'block';
-                loadInvites();  // Refresh list
+                if (!Array.isArray(data)) throw new Error('Not JSON array');
+                // Update local view (user still adds to JSON)
+                document.getElementById('inviteList').innerHTML = data.map(code => `<div class="invite">${code}</div>`).join('');
+                status.textContent = `Fetched ${data.length} from Discord—copy to JSON!`;
             } catch (e) {
                 status.textContent = 'Error: ' + e.message;
                 status.className = 'status error';
                 status.style.display = 'block';
             }
-            btn.disabled = false;
-            btn.textContent = 'Generate & Add';
         }
 
         async function loadInvites() {
             const list = document.getElementById('inviteList');
             list.innerHTML = 'Loading...';
             try {
-                const response = await fetch(`${apiBase}/list`);
-                const data = await response.json();
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                list.innerHTML = data.invites.length ? data.invites.map(code => `<div class="invite">${code}</div>`).join('') : '<div>No invites yet. Generate some!</div>';
+                const response = await fetch(jsonUrl);
+                if (!response.ok) throw new Error('JSON not found—add public/invites.json');
+                const invites = await response.json();
+                list.innerHTML = invites.length ? invites.map(code => `<div class="invite">${code}</div>`).join('') : '<div>No invites yet. Generate some!</div>';
             } catch (e) {
-                list.innerHTML = `<div class="status error">Error loading: ${e.message}<br>Check KV binding in Cloudflare Dashboard.</div>`;
+                list.innerHTML = `<div class="status error">Error: ${e.message}<br>Add public/invites.json with ["CODE"] array.</div>`;
             }
         }
 
-        async function testKV() {
-            try {
-                const response = await fetch(`${apiBase}/list`);
-                const data = await response.json();
-                alert(data.error ? `KV Error: ${data.error}` : `KV OK! Found ${data.invites.length} invites.`);
-            } catch (e) {
-                alert('KV/Test failed: ' + e.message);
-            }
-        }
-
-        // Enter key for password
+        // Enter key
         document.getElementById('adminPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
     </script>
 </body>
