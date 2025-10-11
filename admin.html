@@ -52,7 +52,7 @@
 
     <script>
         const SECRET_PASSWORD = 'comlordUltraSecret2025';  // CHANGE THIS!
-        const jsonUrl = 'public/invites.json';
+        const jsonUrl = '/public/invites.json';  // FIXED PATH
 
         // Auto-load if unlocked
         if (localStorage.getItem('adminUnlocked')) {
@@ -137,11 +137,11 @@
             list.innerHTML = 'Loading...';
             try {
                 const response = await fetch(jsonUrl);
-                if (!response.ok) throw new Error('JSON not found—add public/invites.json');
+                if (!response.ok) throw new Error('JSON not found—check /public/invites.json');
                 const invites = await response.json();
                 list.innerHTML = invites.length ? invites.map(code => `<div class="invite">${code}</div>`).join('') : '<div>No invites yet. Generate some!</div>';
             } catch (e) {
-                list.innerHTML = `<div class="status error">Error: ${e.message}<br>Add public/invites.json with ["CODE"] array.</div>`;
+                list.innerHTML = `<div class="status error">Error: ${e.message}<br>Add/update public/invites.json with ["CODE"] array.</div>`;
             }
         }
 
