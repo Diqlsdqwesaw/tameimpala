@@ -22,7 +22,7 @@
         .status { margin-top: 1rem; padding: 0.5rem; border-radius: 10px; font-size: 0.9rem; }
         .status.success { background: rgba(0, 255, 0, 0.2); color: #0f0; }
         .status.error { background: rgba(255, 0, 0, 0.2); color: #f00; }
-        #inviteList { text-align: left; margin-top: 1rem; color: white; }
+        #inviteList { text-align: left; margin-top: 1rem; color: white; max-height: 300px; overflow-y: auto; }
         .invite { background: rgba(255, 255, 255, 0.1); padding: 0.5rem; margin: 0.25rem 0; border-radius: 10px; word-break: break-all; }
     </style>
 </head>
@@ -40,8 +40,9 @@
             <button onclick="generateInvites()">Generate & Add</button>
             <div id="genStatus" class="status" style="display: none;"></div>
             <h2>Current Invites</h2>
-            <div id="inviteList"></div>
+            <div id="inviteList">Loading...</div>
             <button onclick="loadInvites()">Refresh List</button>
+            <button onclick="testKV()">Test KV Binding</button>
         </div>
     </div>
 
@@ -49,14 +50,22 @@
         const SECRET_PASSWORD = 'comlordUltraSecret2025';  // CHANGE THIS TO YOUR SUPER-SECRET PASSWORD!
         const apiBase = '/api/admin';
 
+        // Auto-load if already unlocked (e.g., bookmark)
+        if (localStorage.getItem('adminUnlocked')) {
+            document.getElementById('passwordPrompt').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'block';
+            loadInvites();
+        }
+
         function checkPassword() {
             const pw = document.getElementById('adminPassword').value;
             const status = document.getElementById('passwordStatus');
             if (pw === SECRET_PASSWORD) {
                 document.getElementById('passwordPrompt').style.display = 'none';
                 document.getElementById('adminContent').style.display = 'block';
-                loadInvites();
-                status.textContent = 'Access granted!';
+                localStorage.setItem('adminUnlocked', 'true');  // Persist session
+                loadInvites();  // Auto-populate invites
+                status.textContent = 'Access granted! Loading invites...';
                 status.className = 'status success';
                 status.style.display = 'block';
             } else {
@@ -82,11 +91,14 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ count: num })
                 });
-                const { invites } = await response.json();
-                status.innerHTML = `Added ${num} invites: <br>${invites.join('<br>')}`;
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                status.innerHTML = `Added ${num} invites: <br>${data.invites.join('<br>')}`;
                 status.className = 'status success';
                 status.style.display = 'block';
-                loadInvites();
+                loadInvites();  // Refresh list
             } catch (e) {
                 status.textContent = 'Error: ' + e.message;
                 status.className = 'status error';
@@ -97,13 +109,27 @@
         }
 
         async function loadInvites() {
+            const list = document.getElementById('inviteList');
+            list.innerHTML = 'Loading...';
             try {
                 const response = await fetch(`${apiBase}/list`);
-                const { invites } = await response.json();
-                const list = document.getElementById('inviteList');
-                list.innerHTML = invites.length ? invites.map(code => `<div class="invite">${code}</div>`).join('') : '<div>No invites yet.</div>';
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                list.innerHTML = data.invites.length ? data.invites.map(code => `<div class="invite">${code}</div>`).join('') : '<div>No invites yet. Generate some!</div>';
             } catch (e) {
-                document.getElementById('inviteList').innerHTML = 'Error loading.';
+                list.innerHTML = `<div class="status error">Error loading: ${e.message}<br>Check KV binding in Cloudflare Dashboard.</div>`;
+            }
+        }
+
+        async function testKV() {
+            try {
+                const response = await fetch(`${apiBase}/list`);
+                const data = await response.json();
+                alert(data.error ? `KV Error: ${data.error}` : `KV OK! Found ${data.invites.length} invites.`);
+            } catch (e) {
+                alert('KV/Test failed: ' + e.message);
             }
         }
 
