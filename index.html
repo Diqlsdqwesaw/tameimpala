@@ -218,7 +218,6 @@
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const gallery = document.getElementById('gallery');
-        const baseUrl = window.location.origin; // Use domain like comlord.xyz
 
         let imageCounter = 0;
 
@@ -266,7 +265,7 @@
             formData.append('image', file);
 
             try {
-                const response = await fetch('/upload', {
+                const response = await fetch('/api/upload', {
                     method: 'POST',
                     body: formData
                 });
