@@ -17,9 +17,13 @@ export async function onRequestPost({ request, env }) {
       return new Response('Invite and image required!', { status: 400 });
     }
 
-    // Instant KV check
-    const inviteValid = await env.INVITES.get(invite) === 'valid';
-    if (!inviteValid) {
+    // Fetch & validate from JSON
+    const response = await fetch(new URL('/invites.json', request.url));
+    if (!response.ok) {
+      return new Response('Invite check failed!', { status: 500 });
+    }
+    const invites = await response.json();
+    if (!invites.includes(invite)) {
       return new Response('Invalid invite!', { status: 403 });
     }
 
@@ -51,6 +55,6 @@ export async function onRequestPost({ request, env }) {
     const publicUrl = `https://${host}/${key}`;
     return Response.json({ url: publicUrl });
   } catch (error) {
-    return new Response('Upload failed: ' + error.message, { status: 500 });
+    return Response.json({ error: 'Upload failed: ' + error.message }, { status: 500 });
   }
 }
