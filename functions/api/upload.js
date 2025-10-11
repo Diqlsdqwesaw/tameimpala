@@ -12,18 +12,17 @@ export async function onRequestPost({ request, env }) {
     const formData = await request.formData();
     const invite = formData.get('invite')?.toUpperCase().trim();
     const file = formData.get('image');
-    const response = await fetch(new URL('/public/invites.json', request.url));
 
     if (!invite || !file) {
       return new Response('Invite and image required!', { status: 400 });
     }
 
     // Fetch & validate from JSON
-    const response = await fetch(new URL('/invites.json', request.url));
-    if (!response.ok) {
+    const jsonResponse = await fetch(new URL('/public/invites.json', request.url));  // Renamed to jsonResponse
+    if (!jsonResponse.ok) {
       return new Response('Invite check failed!', { status: 500 });
     }
-    const invites = await response.json();
+    const invites = await jsonResponse.json();
     if (!invites.includes(invite)) {
       return new Response('Invalid invite!', { status: 403 });
     }
