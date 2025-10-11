@@ -5,12 +5,11 @@ export async function onRequestPost({ request }) {
       return Response.json({ valid: false });
     }
     const code = invite.toUpperCase().trim();
-    const response = await fetch(new URL('/invites.json', request.url));
-    if (!response.ok) {
+    const jsonResponse = await fetch(new URL('/public/invites.json', request.url));  // Renamed to jsonResponse
+    if (!jsonResponse.ok) {
       return Response.json({ valid: false });
     }
-    const invites = await response.json();
-    const response = await fetch(new URL('/public/invites.json', request.url));
+    const invites = await jsonResponse.json();
     const valid = invites.includes(code);
     return Response.json({ valid });
   } catch (error) {
